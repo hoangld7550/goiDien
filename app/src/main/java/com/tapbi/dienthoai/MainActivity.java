@@ -4,34 +4,48 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Debug;
+import android.provider.ContactsContract;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import com.tapbi.dienthoai.Adapter.AdapterGY;
+import com.tapbi.dienthoai.Model.ContactModel;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements iClick {
     String sdt = "";
-    TextView tvDanhBa, tvSdt, tvSo1, tvSo2, tvSo3, tvSo4, tvSo5, tvSo6, tvSo7, tvSo8, tvSo9, tvSao, tvSo0, tvThang;
-    ImageButton imgGoiDien;
+    TextView tvSdt, tvSo1, tvSo2, tvSo3, tvSo4, tvSo5, tvSo6, tvSo7, tvSo8, tvSo9, tvSao, tvSo0, tvThang;
+    ImageButton imgGoiDien, imgDanhBa;
+    RecyclerView rcvGoiY;
     private TelephonyManager mTelephonyManager;
+    List<ContactModel> list = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tvDanhBa = findViewById(R.id.tvDanhBa);
+
         tvSdt = findViewById(R.id.tvSdt);
         tvSo1 = findViewById(R.id.tvSo1);
         tvSo2 = findViewById(R.id.tvSo2);
@@ -46,8 +60,16 @@ public class MainActivity extends AppCompatActivity {
         tvSo0 = findViewById(R.id.tvSo0);
         tvThang = findViewById(R.id.tvThang);
         imgGoiDien = findViewById(R.id.imgGoiDien);
+        imgDanhBa = findViewById(R.id.imgDanhBa);
+        rcvGoiY = findViewById(R.id.rcvGoiYdb);
 
-        tvDanhBa.setOnClickListener(new View.OnClickListener() {
+        Intent intent= getIntent();
+        sdt= intent.getStringExtra("sdt");
+        if(sdt==null){
+            sdt="";
+        }
+        tvSdt.setText(sdt);
+        imgDanhBa.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, DanhBa.class);
@@ -150,6 +172,38 @@ public class MainActivity extends AppCompatActivity {
 
         mTelephonyManager = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
 
+        getContacts(this);
+
+        LinearLayoutManager linearLayoutManager= new LinearLayoutManager(MainActivity.this);
+        rcvGoiY.setLayoutManager(linearLayoutManager);
+        tvSdt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.e("sdt thay doi: ", sdt);
+                List<ContactModel> listGy= new ArrayList<>();
+                if(sdt!=""){
+                    for(int z=0; z<list.size(); z++){
+                        if(list.get(z).mobileNumber.indexOf(sdt)>-1){
+                            listGy.add(list.get(z));
+                        }
+                    }
+                    AdapterGY adapter= new AdapterGY(MainActivity.this, listGy, MainActivity.this);
+                    rcvGoiY.setAdapter(adapter);
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
 
 
     }
@@ -188,6 +242,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
+            case 234:
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    getContacts(this);
+                } else {
+                    Log.d("TAG", "Contact Permission Not Granted");
+                }
+                break;
 
             case 123:
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
@@ -197,9 +258,52 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
+
+
             default:
                 break;
         }
+    }
+
+//lay danh ba
+    public List<ContactModel> getContacts(Context ctx) {
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
+
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    234);
+        }
+
+
+        else {
+
+            ContentResolver contentResolver = ctx.getContentResolver();
+            Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+            if (cursor.getCount() > 0) {
+                while (cursor.moveToNext()) {
+                    String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                    if (cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
+                        Cursor cursorInfo = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
+
+                        while (cursorInfo.moveToNext()) {
+                            ContactModel info = new ContactModel();
+                            info.id = id;
+                            info.name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                            info.mobileNumber = cursorInfo.getString(cursorInfo.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            list.add(info);
+                        }
+                        cursorInfo.close();
+                    }
+                }
+                cursor.close();
+            }
+
+        }
+
+        return list;
     }
 
 
@@ -232,6 +336,13 @@ public class MainActivity extends AppCompatActivity {
     public void xoaSo(View view) {
         if (sdt.length() > 0)
             sdt = sdt.substring(0, sdt.length() - 1);
+        tvSdt.setText(sdt);
+    }
+
+
+    @Override
+    public void nhan(String sdtGy) {
+        sdt=sdtGy;
         tvSdt.setText(sdt);
     }
 }

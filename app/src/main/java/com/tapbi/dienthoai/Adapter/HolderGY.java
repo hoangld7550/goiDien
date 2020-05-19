@@ -8,12 +8,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.tapbi.dienthoai.R;
 
-public class Holder extends RecyclerView.ViewHolder {
+public class HolderGY extends RecyclerView.ViewHolder {
     public TextView tvRowTen;
     public TextView tvRowSdt;
-    public Holder(@NonNull View itemView) {
+    public HolderGY(@NonNull View itemView) {
         super(itemView);
-        tvRowTen = itemView.findViewById(R.id.tvRcvTen);
-        tvRowSdt = itemView.findViewById(R.id.tvRcvSdt);
+        tvRowTen = itemView.findViewById(R.id.tvRcvTenGY);
+        tvRowSdt = itemView.findViewById(R.id.tvRcvSdtGY);
     }
 }

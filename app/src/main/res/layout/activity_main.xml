@@ -7,25 +7,23 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/tvDanhBa"
-        android:textSize="24dp"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Danh bạ"/>
+
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+             <androidx.recyclerview.widget.RecyclerView
+                 android:id="@+id/rcvGoiYdb"
+                 android:layout_width="match_parent"
+                 android:layout_height="100dp"/>
 
             <TextView
                 android:textSize="50dp"
                 android:textColor="@color/colorAccent"
                 android:id="@+id/tvSdt"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"/>
+                android:layout_height="80dp"/>
             <ImageButton
                 android:layout_marginEnd="20dp"
                 android:onClick="xoaSo"
@@ -168,12 +166,42 @@
                 android:textSize="50dp" />
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/imgGoiDien"
-            android:layout_gravity="center"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@drawable/call" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/imgGoiDien"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/call"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imgDanhBa"
+                app:layout_constraintHorizontal_bias="0.714"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0"
+                tools:ignore="MissingConstraints" />
+
+            <ImageButton
+                android:id="@+id/imgDanhBa"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginRight="32dp"
+
+                android:background="@drawable/contact"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     </LinearLayout>
 
